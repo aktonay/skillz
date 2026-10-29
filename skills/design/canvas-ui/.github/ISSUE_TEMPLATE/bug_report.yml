@@ -1,0 +1,51 @@
+name: Bug report
+description: Something is broken or renders incorrectly
+labels: [bug]
+body:
+  - type: input
+    id: component
+    attributes:
+      label: Component
+      description: Which component is affected? Write "site" for issues with canvasui.dev itself.
+      placeholder: Liquid
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead? Screenshots or a short recording help a lot for visual glitches.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Install liquid-react
+        2. Wrap the hero section
+        3. Move the cursor over it
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and version
+      placeholder: Safari 26.5, Chrome 140
+    validations:
+      required: true
+  - type: dropdown
+    id: flag
+    attributes:
+      label: Is the html-in-canvas flag enabled?
+      options:
+        - "No (WebGL overlay fallback)"
+        - "Yes (chrome://flags experimental web platform features)"
+        - "Not sure"
+    validations:
+      required: true
+  - type: input
+    id: framework
+    attributes:
+      label: Framework
+      placeholder: React 19, Solid 1.9, Preact 10, Vue 3, Svelte 5, vanilla

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skills Hub — Universal AI Agent Skills Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Ambient background glow elements -->
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+
+  <!-- Header -->
+  <header class="navbar">
+    <div class="nav-brand">
+      <div class="brand-logo">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+          <polyline points="2 17 12 22 22 17"></polyline>
+          <polyline points="2 12 12 17 22 12"></polyline>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-title">SKILLS HUB</div>
+        <div class="brand-subtitle">One Unified Repository & Installer for AI Coding Agents</div>
+      </div>
+    </div>
+    
+    <div class="nav-actions">
+      <button class="btn btn-secondary" id="btnRefreshStatus">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+        Sync Agent Status
+      </button>
+      <button class="btn btn-secondary" id="btnInstallAllClaude">
+        Install into Claude Code
+      </button>
+      <button class="btn btn-primary" id="btnInstallAllAgents">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        Install All to All Agents (1-Click)
+      </button>
+    </div>
+  </header>
+
+  <!-- Hero & Metric Stats -->
+  <main class="container">
+    <section class="hero-section">
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        Unified Local Skill Registry & Installer
+      </div>
+      <h1 class="hero-heading">Ship Beautiful Software with <span class="text-gradient">Agent Skills</span></h1>
+      <p class="hero-description">
+        Access 114 production-grade skills and 14 premier open-source design repositories (UI/UX Pro Max, Awesome DESIGN.md, Hallmark, Impeccable, React Bits, Emil Kowalski Motion, GSAP, Canvas UI) in a single centralized system.
+      </p>
+
+      <!-- Stat Badges -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-num" id="statTotalSkills">114</div>
+          <div class="stat-label">Total Unified Skills</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="statDesignRepos">14</div>
+          <div class="stat-label">Design & UI Repositories</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="statCategories">8</div>
+          <div class="stat-label">Specialized Categories</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="statActiveAgents">5+</div>
+          <div class="stat-label">Coding Agents Detected</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Agent Target Installation Cards -->
+    <section class="agent-deck">
+      <div class="section-title-wrap">
+        <h2 class="section-title">Agent Deployment Targets</h2>
+        <span class="section-badge">1-Click Symlink / Copy</span>
+      </div>
+      <div class="agents-grid" id="agentsGrid">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- Top Design Repositories Showcase Bar -->
+    <section class="upstream-bar">
+      <div class="upstream-header">
+        <div class="upstream-title">Featured 14 UI/UX & Design Toolkits for Founders</div>
+        <span class="upstream-sub">Ready to deploy into any startup app</span>
+      </div>
+      <div class="upstream-pills" id="upstreamPills">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- Skill Browser & Controls -->
+    <section class="skills-explorer">
+      <div class="controls-bar">
+        <!-- Search Bar -->
+        <div class="search-wrap">
+          <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="searchInput" class="search-input" placeholder="Search by name, category, rule, or tag (Press '/' to focus)...">
+          <button class="search-clear" id="searchClear" style="display:none;">&times;</button>
+        </div>
+
+        <div class="filter-actions">
+          <select id="agentTargetSelect" class="select-control">
+            <option value="all">⚡ ALL AGENTS ON THIS PC (Universal 1-Click)</option>
+            <option value="claude">Target: Claude Code (~/.claude/skills)</option>
+            <option value="cursor">Target: Cursor (~/.cursor/skills-cursor)</option>
+            <option value="antigravity">Target: Google Antigravity & Gemini (~/.gemini/config/skills)</option>
+            <option value="codex">Target: OpenAI Codex (~/.codex/skills)</option>
+            <option value="qwen">Target: Qwen Agent (~/.qwen/skills)</option>
+            <option value="glm">Target: GLM / ZCode (~/.zcode/skills)</option>
+            <option value="windsurf">Target: Windsurf (~/.codeium/windsurf/skills)</option>
+            <option value="openhands">Target: OpenHands (~/.openhands/skills)</option>
+            <option value="roo">Target: Roo Code (~/.roo/skills)</option>
+            <option value="cline">Target: Cline (~/.cline/skills)</option>
+            <option value="trae">Target: Trae (~/.trae/skills)</option>
+            <option value="copilot">Target: GitHub Copilot (~/.copilot/skills)</option>
+            <option value="continue">Target: Continue (~/.continue/skills)</option>
+            <option value="kiro">Target: Kiro (~/.kiro/skills)</option>
+          </select>
+          <button class="btn btn-outline" id="btnInstallCategory">Install Current Category</button>
+        </div>
+      </div>
+
+      <!-- Category Filter Pills -->
+      <div class="category-tabs" id="categoryTabs">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Skills Cards Grid -->
+      <div class="skills-grid" id="skillsGrid">
+        <!-- Cards rendered dynamically -->
+      </div>
+    </section>
+  </main>
+
+  <!-- Skill Detail & Live Editor Modal -->
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal-drawer">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="modal-icon" id="modalIcon">📦</span>
+          <div>
+            <h3 class="modal-title" id="modalTitle">Skill Name</h3>
+            <span class="modal-subtitle" id="modalCategory">Category</span>
+          </div>
+        </div>
+        <button class="modal-close" id="modalClose">&times;</button>
+      </div>
+
+      <!-- Modal Nav Tabs -->
+      <div class="modal-tabs">
+        <button class="modal-tab active" data-tab="preview">Preview & Instructions</button>
+        <button class="modal-tab" data-tab="editor">Edit SKILL.md</button>
+        <button class="modal-tab" data-tab="deploy">Agent Installation</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Tab 1: Preview -->
+        <div class="tab-pane active" id="tabPreview">
+          <div class="meta-row" id="modalMeta"></div>
+          <div class="markdown-preview" id="modalMarkdown"></div>
+        </div>
+
+        <!-- Tab 2: Live Editor -->
+        <div class="tab-pane" id="tabEditor">
+          <div class="editor-bar">
+            <span class="editor-tip">Make live edits directly to this skill's SKILL.md</span>
+            <button class="btn btn-primary btn-sm" id="btnSaveSkill">Save Changes</button>
+          </div>
+          <textarea id="editorTextarea" class="code-editor" spellcheck="false"></textarea>
+        </div>
+
+        <!-- Tab 3: Deploy -->
+        <div class="tab-pane" id="tabDeploy">
+          <div class="deploy-banner">
+            <p>Deploy this skill to your preferred coding agent. Edits made in this hub immediately sync via filesystem junctions!</p>
+          </div>
+          <div class="deploy-options-grid" id="modalDeployGrid">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <footer class="footer">
+    <p>Skills Hub &copy; 2026. Built for Founders, Engineers, and Autonomous Coding Agents.</p>
+    <p class="footer-links">
+      <span>Command-line: <code>skills install --all -t claude</code></span>
+      &bull;
+      <span>Location: <code>c:\AKTONAY\Skillz</code></span>
+    </p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+{
+  "name": "skills-hub",
+  "version": "1.0.0",
+  "description": "Unified skills repository, manager, and one-click installer for Claude Code, Codex, Cursor, Antigravity, and AI coding agents.",
+  "main": "src/index.js",
+  "bin": {
+    "skills": "./bin/skills.js",
+    "skillz": "./bin/skills.js"
+  },
+  "scripts": {
+    "start": "node bin/skills.js ui",
+    "build-registry": "node scripts/build-registry.js",
+    "validate": "node bin/skills.js validate",
+    "status": "node bin/skills.js status"
+  },
+  "keywords": [
+    "claude-code",
+    "skills",
+    "cursor",
+    "codex",
+    "antigravity",
+    "design",
+    "ui-ux",
+    "agentic-ai"
+  ],
+  "author": "AKTONAY",
+  "license": "MIT"
+}

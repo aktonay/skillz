@@ -1,0 +1,19 @@
+# Dependencies & Package Managers
+node_modules/
+skills/engineering/gstack/node_modules/
+.npm/
+
+# Build artifacts & caches
+dist/
+build/
+.cache/
+tmp/
+*.log
+
+# OS metadata
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local upstream source repository archive (kept on disk, excluded from git tracking)
+sources/
