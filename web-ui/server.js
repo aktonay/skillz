@@ -7,6 +7,7 @@ const { execSync } = require('child_process');
 const ROOT_DIR = path.resolve(__dirname, '..');
 const REGISTRY_PATH = path.join(ROOT_DIR, 'registry.json');
 const PUBLIC_DIR = path.join(__dirname, 'public');
+const { PROFILES, WIZARD_QUESTIONS, resolveSkillsForProfile } = require('../lib/profiles');
 
 const AGENT_PATHS = {
   claude: path.join(os.homedir(), '.claude', 'skills'),
@@ -104,16 +105,43 @@ const server = http.createServer(async (req, res) => {
     return sendJson(res, 200, getRegistry());
   }
 
+  if (pathname === '/api/profiles' && req.method === 'GET') {
+    const reg = getRegistry();
+    const profileSummaries = Object.keys(PROFILES).map(k => {
+      const resolved = resolveSkillsForProfile(reg, k);
+      return {
+        id: k,
+        name: resolved.profile.name,
+        icon: resolved.profile.icon,
+        tagline: resolved.profile.tagline,
+        description: resolved.profile.description,
+        count: resolved.count,
+        includedCategories: resolved.includedCategories,
+        excludedCategories: resolved.excludedCategories.map(c => ({ key: c.key, label: c.label, count: c.count, icon: c.icon })),
+        whyExcluded: resolved.profile.whyExcluded
+      };
+    });
+    return sendJson(res, 200, {
+      profiles: profileSummaries,
+      questions: WIZARD_QUESTIONS
+    });
+  }
+
   if (pathname === '/api/status' && req.method === 'GET') {
     return sendJson(res, 200, getAgentStatus());
   }
 
   if (pathname === '/api/install' && req.method === 'POST') {
     try {
-      const { skillId, category, all, target = 'claude', mode = 'symlink' } = await parseBody(req);
+      const { skillId, category, profile, answers, all, target = 'all', mode = 'symlink' } = await parseBody(req);
       const reg = getRegistry();
       let toInstall = [];
-      if (all) {
+      let resolvedMeta = null;
+
+      if (profile) {
+        resolvedMeta = resolveSkillsForProfile(reg, profile, answers || {});
+        toInstall = resolvedMeta.skills;
+      } else if (all) {
         toInstall = reg.skills;
       } else if (category) {
         toInstall = reg.skills.filter(s => s.category === category);
@@ -124,11 +152,12 @@ const server = http.createServer(async (req, res) => {
 
       const targets = (target === 'all')
         ? Object.keys(AGENT_PATHS)
-        : [target];
+        : target.split(',').map(t => t.trim());
 
+      const targetDirs = new Set(targets.map(t => AGENT_PATHS[t] || path.resolve(t)));
       let installedCount = 0;
-      for (const t of targets) {
-        const targetDir = AGENT_PATHS[t] || path.resolve(t);
+
+      for (const targetDir of targetDirs) {
         if (!fs.existsSync(targetDir)) {
           fs.mkdirSync(targetDir, { recursive: true });
         }
@@ -152,16 +181,24 @@ const server = http.createServer(async (req, res) => {
             }
             installedCount++;
           } catch (e) {
-            fs.cpSync(sourcePath, destPath, { recursive: true });
-            installedCount++;
+            try {
+              fs.cpSync(sourcePath, destPath, { recursive: true });
+              installedCount++;
+            } catch {}
+          }
         }
       }
 
       return sendJson(res, 200, {
         success: true,
         installedCount,
+        skillCount: toInstall.length,
+        profileMeta: resolvedMeta ? {
+          name: resolvedMeta.profile.name,
+          count: resolvedMeta.count,
+          excluded: resolvedMeta.excludedCategories.map(c => c.label)
+        } : null,
         target,
-        targetDir,
         status: getAgentStatus()
       });
     } catch (e) {

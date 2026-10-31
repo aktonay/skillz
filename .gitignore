@@ -17,3 +17,6 @@ desktop.ini
 
 # Local upstream source repository archive (kept on disk, excluded from git tracking)
 sources/
+
+# Scratch directory
+scratch/

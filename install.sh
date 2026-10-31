@@ -43,7 +43,11 @@ TARGET="${1:-all}"
 EXTRA_ARGS="${@:2}"
 
 echo -e "\033[36m[3/4] Deploying skills to agents (Target: $TARGET)...\033[0m"
-node "$DIR/bin/skills.js" install --all --target "$TARGET" $EXTRA_ARGS
+if [[ " $* " =~ " --profile " ]] || [[ " $* " =~ " -p " ]]; then
+  node "$DIR/bin/skills.js" install --target "$TARGET" $EXTRA_ARGS
+else
+  node "$DIR/bin/skills.js" install --all --target "$TARGET" $EXTRA_ARGS
+fi
 
 echo -e "\033[1;32m"
 cat << "EOF"

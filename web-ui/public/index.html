@@ -31,6 +31,10 @@
     </div>
     
     <div class="nav-actions">
+      <button class="btn btn-wizard" id="btnOpenWizard">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        Role Setup Wizard (6Q)
+      </button>
       <button class="btn btn-secondary" id="btnRefreshStatus">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
         Sync Agent Status
@@ -50,11 +54,11 @@
     <section class="hero-section">
       <div class="hero-badge">
         <span class="badge-dot"></span>
-        Unified Local Skill Registry & Installer
+        Unified Local Skill Registry & Role-Based Persona Installer
       </div>
       <h1 class="hero-heading">Ship Beautiful Software with <span class="text-gradient">Agent Skills</span></h1>
       <p class="hero-description">
-        Access 114 production-grade skills and 14 premier open-source design repositories (UI/UX Pro Max, Awesome DESIGN.md, Hallmark, Impeccable, React Bits, Emil Kowalski Motion, GSAP, Canvas UI) in a single centralized system.
+        Access 162 production-grade skills categorized by role. Designers get rich UI/UX without testing bloat; QA engineers get deep verification without CSS designs; founders get a curated full-stack arsenal.
       </p>
 
       <!-- Stat Badges -->
@@ -96,6 +100,25 @@
         <span class="upstream-sub">Ready to deploy into any startup app</span>
       </div>
       <div class="upstream-pills" id="upstreamPills">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- Role Persona Profiles Filter Bar -->
+    <section class="persona-section">
+      <div class="persona-header">
+        <div class="persona-title-wrap">
+          <span class="persona-icon">🎭</span>
+          <div>
+            <h3 class="persona-title">Persona Profiles</h3>
+            <span class="persona-subtitle">Role-tailored skill suites (Designers skip testing; QA testers skip 43 UI designs)</span>
+          </div>
+        </div>
+        <button class="btn btn-sm btn-outline-cyan" id="btnLaunchWizardFromSection">
+          Launch 6-Question Wizard &rarr;
+        </button>
+      </div>
+      <div class="persona-pills" id="personaPills">
         <!-- Rendered dynamically -->
       </div>
     </section>
@@ -192,6 +215,53 @@
             <!-- Rendered dynamically -->
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6-Question Role Setup Wizard Modal -->
+  <div class="modal-backdrop" id="wizardModalBackdrop" style="display:none;">
+    <div class="modal-drawer wizard-drawer">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="modal-icon">🧙</span>
+          <div>
+            <h3 class="modal-title">Interactive Role Setup Wizard</h3>
+            <span class="modal-subtitle" id="wizardStepIndicator">Step 1 of 6: Role Archetype</span>
+          </div>
+        </div>
+        <button class="modal-close" id="wizardModalClose">&times;</button>
+      </div>
+
+      <div class="wizard-progress-bar">
+        <div class="wizard-progress-fill" id="wizardProgressFill" style="width: 16.66%;"></div>
+      </div>
+
+      <div class="modal-body wizard-body">
+        <div class="wizard-question-box" id="wizardQuestionBox">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <div class="wizard-preview-card" id="wizardPreviewCard">
+          <div class="preview-header">
+            <span class="preview-title" id="wizardPreviewTitle">Role Profile Preview</span>
+            <span class="preview-count" id="wizardPreviewCount">-- Skills Tailored</span>
+          </div>
+          <div class="preview-body" id="wizardPreviewBody">
+            <!-- Breakdown of selected categories and excluded bloat -->
+          </div>
+        </div>
+      </div>
+
+      <div class="wizard-footer">
+        <button class="btn btn-secondary" id="btnWizardPrev" style="visibility:hidden;">&larr; Back</button>
+        <div class="wizard-footer-spacer"></div>
+        <button class="btn btn-secondary" id="btnWizardDefaults">Use Defaults</button>
+        <button class="btn btn-primary" id="btnWizardNext">Next Question &rarr;</button>
+        <button class="btn btn-wizard-deploy" id="btnWizardDeploy" style="display:none;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          Deploy Tailored Profile to Agents
+        </button>
       </div>
     </div>
   </div>

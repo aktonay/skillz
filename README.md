@@ -14,6 +14,10 @@
 
 Equips your AI coding agents with an autonomous execution harness, software engineering discipline, token optimization, enterprise design systems, and 162+ production engineering skills through a single unified engine.
 
+<p align="center">
+  <img src="assets/skillz_architecture.png" alt="Skillz Architecture Diagram" width="920" />
+</p>
+
 ---
 
 ## 🚀 Instant 1-Command Universal Installation
@@ -39,6 +43,41 @@ npx git+https://github.com/aktonay/skillz.git install --all --target all
 Simply give your AI agent this prompt:
 > *"Install the Skillz universal pack across all agents by running:*
 > `skills install --all --target all`"
+
+---
+
+## 🧙 Interactive 6-Question Role Setup Wizard & Persona Profiles
+
+Different engineering roles require different agent capabilities. **Designers don't need python test runners or cloud infrastructure bloat**, while **QA test engineers don't need 43 UI design systems or animation timelines**.
+
+Skillz includes an **interactive 6-question profiling wizard** that tailors your agent's skills to your exact workflow in seconds:
+
+```bash
+skills wizard       # Runs the interactive 6-question setup questionnaire
+skills profiles     # Displays all available role profiles and exclusions
+```
+
+### 📋 The 6 Profiling Questions
+
+| # | Question Focus | What It Configures | Options |
+|---|---|---|---|
+| **1** | **Primary Role & Agent Archetype** | Determines core domain specialization and filters out irrelevant domain bloat. | `1` 🎨 **Designer**: 43 UI design systems, animations, styling *(skips QA & testing)*<br>`2` 🛡️ **QA Engineer**: Pytest, verification gates, TDD, debugging *(skips 43 UI designs)*<br>`3` ☁️ **Backend Architect**: GCP, Docker, APIs, reliability, architecture *(skips UI design)*<br>`4` 🧠 **AI Agent Orchestrator**: ECC Harness, Harness² OS, superpowers, caveman *(skips UI)*<br>`5` 🚀 **Full-Stack Founder**: Curated 12 top UI designs + TDD + backend + QA + cloud<br>`6` ⚡ **Universal Power User**: Complete 162-skill arsenal across all 11 categories |
+| **2** | **Engineering Rigor & Verification** | Sets the strictness of testing and completion gating. | `1` 🔒 **Strict & Contract-Driven**: Mandatory TDD, halt-on-failure contracts<br>`2` 🔄 **Pragmatic & Agile**: Iterative plan-before-act, fast feedback loops<br>`3` ⚡ **Rapid & Creative**: Frictionless prototyping without test barriers |
+| **3** | **Token Efficiency & Communication** | Configures agent verbosity and token compression. | `1` ⚡ **Caveman Token Compression**: Saves 60%+ tokens with ultra-terse execution<br>`2` 📖 **Standard & Conversational**: Full explanations, detailed reasoning notes |
+| **4** | **Optional Feature Packs** | Allows adding cross-functional packs outside the primary role. | `1` Cloud & Infrastructure &bull; `2` Python & QA Automation &bull; `3` UI/UX & Design &bull; `4` Cursor Tools &bull; `5` Pure Role Focus |
+| **5** | **Target AI Coding Agent(s)** | Selects which agents to install and link. | `1` All detected agents on PC &bull; `2` Claude Code &bull; `3` Cursor &bull; `4` Antigravity &bull; `5` OpenClaw &bull; `6` Windsurf |
+| **6** | **Filesystem Link Strategy** | Selects live synchronization or static copies. | `1` 🔗 **Zero-Drift Symlink / Junction** (Edits in repo reflect immediately)<br>`2` 📁 **Standalone Directory Copy** (Isolated files) |
+
+### 🎯 Role Profiles Breakdown (Clean Specialization)
+
+| Profile ID | Target Role | Skills Included | Categories Excluded (No Bloat) | Example 1-Liner |
+|---|---|:---:|---|---|
+| `designer` | 🎨 **Frontend & UI/UX Designer** | **65** | 🐍 `python-testing`, ☁️ `cloud`, 🧠 `agent-harness`, 🧭 `ide-meta` | `skills install --profile designer` |
+| `qa` | 🛡️ **QA & Reliability Engineer** | **32** | 🎨 `design` *(skips all 43 CSS & UI design libraries)* | `skills install --profile qa` |
+| `backend` | ☁️ **Backend & Cloud Architect** | **49** | 🎨 `design` *(skips all 43 CSS & UI design libraries)* | `skills install --profile backend` |
+| `agent-harness` | 🧠 **AI Agent Orchestrator** | **53** | 🎨 `design` *(skips all 43 CSS & UI design libraries)* | `skills install --profile agent-harness` |
+| `fullstack` | 🚀 **Full-Stack Solo Founder** | **94** | Curated balance: top 12 UI designs + full TDD + cloud + QA | `skills install --profile fullstack` |
+| `all` | ⚡ **Universal Power User** | **162** | None *(All 11 categories active)* | `skills install --profile all` |
 
 ---
 
@@ -128,7 +167,19 @@ Skillz upgrades autonomous coding agents from simple chat assistants into discip
 The global `skills` and `skillz` commands manage your entire skill catalog:
 
 ```bash
-# Universal 1-Click Installation (Installs to all detected agents)
+# Interactive 6-Question Setup Wizard
+skills wizard
+
+# View all Persona Profiles and Category Exclusions
+skills profiles
+
+# Install by Persona Profile (Skips irrelevant domain bloat)
+skills install --profile designer --target all   # 65 UI design & animation skills (skips QA & testing)
+skills install --profile qa --target all         # 32 QA & pytest skills (skips 43 UI designs)
+skills install --profile backend --target all    # 49 cloud & systems skills (skips 43 UI designs)
+skills install --profile fullstack --target all  # 94 curated founder essentials
+
+# Universal 1-Click Installation (Installs all 162 skills across all categories)
 skills install --all --target all
 
 # Update and re-sync all latest skills

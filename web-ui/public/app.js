@@ -2,9 +2,22 @@
 
 let registryData = null;
 let agentStatusData = null;
+let profilesData = null;
+let currentProfile = 'all';
 let currentCategory = 'all';
 let currentSearch = '';
 let activeSkillId = null;
+
+// Wizard State
+let wizardStep = 0;
+let wizardAnswers = {
+  role: 'fullstack',
+  rigor: 'agile',
+  compression: 'caveman',
+  featurePacks: ['none'],
+  target: 'all',
+  mode: 'symlink'
+};
 
 // DOM Elements
 const searchInput = document.getElementById('searchInput');
@@ -55,16 +68,19 @@ function showToast(message, type = 'success') {
 // Fetch Initial Data
 async function loadData() {
   try {
-    const [skillsRes, statusRes] = await Promise.all([
+    const [skillsRes, statusRes, profilesRes] = await Promise.all([
       fetch('/api/skills').then(r => r.json()),
-      fetch('/api/status').then(r => r.json())
+      fetch('/api/status').then(r => r.json()),
+      fetch('/api/profiles').then(r => r.json())
     ]);
     registryData = skillsRes;
     agentStatusData = statusRes;
+    profilesData = profilesRes;
 
     renderStats();
     renderAgentDeck();
     renderUpstreamPills();
+    renderPersonaPills();
     renderCategoryTabs();
     renderSkillsGrid();
   } catch (err) {
@@ -187,6 +203,37 @@ function renderCategoryTabs() {
   });
 }
 
+// Render Persona Profile Pills
+function renderPersonaPills() {
+  const personaPills = document.getElementById('personaPills');
+  if (!personaPills || !profilesData?.profiles) return;
+  personaPills.innerHTML = '';
+
+  const allPill = document.createElement('button');
+  allPill.className = `persona-pill ${currentProfile === 'all' ? 'active' : ''}`;
+  allPill.innerHTML = `<span>⚡</span> <span>All Roles</span> <span class="persona-count">${registryData?.totalSkills || 162}</span>`;
+  allPill.addEventListener('click', () => {
+    currentProfile = 'all';
+    renderPersonaPills();
+    renderSkillsGrid();
+  });
+  personaPills.appendChild(allPill);
+
+  profilesData.profiles.forEach(prof => {
+    if (prof.id === 'all') return;
+    const pill = document.createElement('button');
+    pill.className = `persona-pill ${currentProfile === prof.id ? 'active' : ''}`;
+    pill.innerHTML = `<span>${prof.icon}</span> <span>${prof.name}</span> <span class="persona-count">${prof.count}</span>`;
+    pill.title = `${prof.tagline}\n${prof.description}`;
+    pill.addEventListener('click', () => {
+      currentProfile = prof.id;
+      renderPersonaPills();
+      renderSkillsGrid();
+    });
+    personaPills.appendChild(pill);
+  });
+}
+
 // Filter and Render Skills Grid
 function renderSkillsGrid() {
   if (!registryData?.skills) return;
@@ -194,13 +241,39 @@ function renderSkillsGrid() {
 
   const q = currentSearch.toLowerCase().trim();
   const filtered = registryData.skills.filter(s => {
+    // Role Persona filter
+    let matchProfile = true;
+    if (currentProfile !== 'all') {
+      if (currentProfile === 'designer') {
+        matchProfile = s.category === 'design' || s.category === 'efficiency';
+      } else if (currentProfile === 'qa') {
+        matchProfile = ['python-testing', 'reliability', 'superpowers'].includes(s.category) ||
+                       (s.category === 'development' && ['git-workflow', 'code-review', 'debugging'].some(k => (s.id + s.name + s.description).toLowerCase().includes(k)));
+      } else if (currentProfile === 'backend') {
+        matchProfile = ['cloud', 'engineering', 'reliability', 'development', 'agent-harness'].includes(s.category);
+      } else if (currentProfile === 'agent-harness') {
+        matchProfile = ['agent-harness', 'superpowers', 'efficiency', 'reliability'].includes(s.category);
+      } else if (currentProfile === 'fullstack') {
+        const curatedDesigns = [
+          'ui-ux-pro-max', 'awesome-design-md', 'open-design', 'taste-skill', 'impeccable',
+          'react-bits', 'magicui', 'canvas-ui', 'hallmark', 'google-design-md', 'design-system', 'animate'
+        ];
+        if (s.category === 'design') {
+          matchProfile = curatedDesigns.includes(s.id);
+        } else {
+          matchProfile = ['superpowers', 'development', 'reliability', 'efficiency', 'python-testing', 'cloud'].includes(s.category);
+        }
+      }
+    }
+
     const matchCat = currentCategory === 'all' || s.category === currentCategory;
     const matchSearch = !q || 
       s.id.toLowerCase().includes(q) ||
       s.name.toLowerCase().includes(q) ||
       s.description.toLowerCase().includes(q) ||
       s.tags.some(t => t.toLowerCase().includes(q));
-    return matchCat && matchSearch;
+
+    return matchProfile && matchCat && matchSearch;
   });
 
   if (filtered.length === 0) {
@@ -461,5 +534,204 @@ btnRefreshStatus.addEventListener('click', async () => {
   showToast('Status refreshed!');
 });
 
+// Wizard Functions
+function openWizard() {
+  const modal = document.getElementById('wizardModalBackdrop');
+  if (!modal) return;
+  modal.style.display = 'flex';
+  wizardStep = 0;
+  renderWizardStep();
+}
+
+function closeWizard() {
+  const modal = document.getElementById('wizardModalBackdrop');
+  if (modal) modal.style.display = 'none';
+}
+
+function renderWizardStep() {
+  if (!profilesData?.questions) return;
+  const question = profilesData.questions[wizardStep];
+  const totalSteps = profilesData.questions.length;
+
+  const indicator = document.getElementById('wizardStepIndicator');
+  const progressFill = document.getElementById('wizardProgressFill');
+  const btnPrev = document.getElementById('btnWizardPrev');
+  const btnNext = document.getElementById('btnWizardNext');
+  const btnDeploy = document.getElementById('btnWizardDeploy');
+
+  indicator.textContent = `Question ${wizardStep + 1} of ${totalSteps}: ${question.title}`;
+  progressFill.style.width = `${((wizardStep + 1) / totalSteps) * 100}%`;
+
+  btnPrev.style.visibility = wizardStep === 0 ? 'hidden' : 'visible';
+  if (wizardStep === totalSteps - 1) {
+    btnNext.style.display = 'none';
+    btnDeploy.style.display = 'inline-flex';
+  } else {
+    btnNext.style.display = 'inline-flex';
+    btnDeploy.style.display = 'none';
+  }
+
+  const box = document.getElementById('wizardQuestionBox');
+  box.innerHTML = `
+    <h3 class="wizard-question-title">[${wizardStep + 1}/${totalSteps}] ${question.question}</h3>
+    <div class="wizard-options-grid" id="wizardOptionsGrid"></div>
+  `;
+
+  const grid = document.getElementById('wizardOptionsGrid');
+  const currentVal = wizardAnswers[question.id];
+
+  question.options.forEach(opt => {
+    const card = document.createElement('div');
+    const isMulti = !!question.multi;
+    const isSelected = isMulti 
+      ? (Array.isArray(currentVal) && currentVal.includes(opt.value))
+      : (currentVal === opt.value);
+
+    card.className = `wizard-option-card ${isSelected ? 'active' : ''}`;
+    card.innerHTML = `
+      <div class="wizard-radio-circle"></div>
+      <div class="wizard-option-content">
+        <h4>${opt.label}</h4>
+        <p>${opt.desc}</p>
+      </div>
+    `;
+
+    card.addEventListener('click', () => {
+      if (isMulti) {
+        if (!Array.isArray(wizardAnswers[question.id])) wizardAnswers[question.id] = [];
+        if (opt.value === 'none') {
+          wizardAnswers[question.id] = ['none'];
+        } else {
+          wizardAnswers[question.id] = wizardAnswers[question.id].filter(v => v !== 'none');
+          if (wizardAnswers[question.id].includes(opt.value)) {
+            wizardAnswers[question.id] = wizardAnswers[question.id].filter(v => v !== opt.value);
+          } else {
+            wizardAnswers[question.id].push(opt.value);
+          }
+          if (wizardAnswers[question.id].length === 0) wizardAnswers[question.id] = ['none'];
+        }
+      } else {
+        wizardAnswers[question.id] = opt.value;
+      }
+      renderWizardStep();
+    });
+
+    grid.appendChild(card);
+  });
+
+  updateWizardPreview();
+}
+
+function updateWizardPreview() {
+  const profileId = wizardAnswers.role || 'fullstack';
+  const prof = profilesData?.profiles?.find(p => p.id === profileId) || profilesData?.profiles?.[4];
+  if (!prof) return;
+
+  const previewTitle = document.getElementById('wizardPreviewTitle');
+  const previewCount = document.getElementById('wizardPreviewCount');
+  const body = document.getElementById('wizardPreviewBody');
+
+  previewTitle.innerHTML = `${prof.icon} ${prof.name}`;
+  previewCount.textContent = `${prof.count} Tailored Skills`;
+
+  const includedBadges = prof.includedCategories.map(c => `<span class="preview-pill-included">✓ ${c}</span>`).join(' ');
+  const excludedBadges = prof.excludedCategories.length > 0
+    ? prof.excludedCategories.map(c => `<span class="preview-pill-excluded">✗ ${c.label} (${c.count})</span>`).join(' ')
+    : '<span style="color:var(--text-muted);font-size:0.75rem;">None (Universal Full Arsenal)</span>';
+
+  body.innerHTML = `
+    <div><strong>Target Agent:</strong> ${wizardAnswers.target || 'All Detected Agents'} &bull; <strong>Link Strategy:</strong> ${wizardAnswers.mode || 'Symlink / Junction'}</div>
+    <div><strong>Included Categories:</strong> <div class="preview-pill-list">${includedBadges}</div></div>
+    <div><strong>Excluded Bloat (Clean Specialization):</strong> <div class="preview-pill-list">${excludedBadges}</div></div>
+    ${prof.whyExcluded ? `<div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.25rem;"><em>Why: ${prof.whyExcluded}</em></div>` : ''}
+  `;
+}
+
+async function deployWizardProfile() {
+  try {
+    showToast(`Deploying ${wizardAnswers.role.toUpperCase()} profile into agents...`, 'info');
+    const res = await fetch('/api/install', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        profile: wizardAnswers.role,
+        answers: wizardAnswers,
+        target: wizardAnswers.target || 'all',
+        mode: wizardAnswers.mode || 'symlink'
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(`Successfully deployed ${data.skillCount} skills (${data.profileMeta?.name || wizardAnswers.role}) to ${data.target.toUpperCase()}!`, 'success');
+      agentStatusData = data.status;
+      renderAgentDeck();
+      renderStats();
+      closeWizard();
+    } else {
+      showToast('Deployment failed: ' + data.error, 'error');
+    }
+  } catch (err) {
+    showToast('Deployment error: ' + err.message, 'error');
+  }
+}
+
+// Wizard Event Listeners
+const btnOpenWizard = document.getElementById('btnOpenWizard');
+if (btnOpenWizard) btnOpenWizard.addEventListener('click', openWizard);
+
+const btnLaunchWizardFromSection = document.getElementById('btnLaunchWizardFromSection');
+if (btnLaunchWizardFromSection) btnLaunchWizardFromSection.addEventListener('click', openWizard);
+
+const wizardModalClose = document.getElementById('wizardModalClose');
+if (wizardModalClose) wizardModalClose.addEventListener('click', closeWizard);
+
+const btnWizardPrev = document.getElementById('btnWizardPrev');
+if (btnWizardPrev) {
+  btnPrev = btnWizardPrev;
+  btnWizardPrev.addEventListener('click', () => {
+    if (wizardStep > 0) {
+      wizardStep--;
+      renderWizardStep();
+    }
+  });
+}
+
+const btnWizardNext = document.getElementById('btnWizardNext');
+if (btnWizardNext) {
+  btnWizardNext.addEventListener('click', () => {
+    if (profilesData?.questions && wizardStep < profilesData.questions.length - 1) {
+      wizardStep++;
+      renderWizardStep();
+    }
+  });
+}
+
+const btnWizardDefaults = document.getElementById('btnWizardDefaults');
+if (btnWizardDefaults) {
+  btnWizardDefaults.addEventListener('click', () => {
+    wizardAnswers = {
+      role: 'fullstack',
+      rigor: 'agile',
+      compression: 'caveman',
+      featurePacks: ['none'],
+      target: 'all',
+      mode: 'symlink'
+    };
+    wizardStep = (profilesData?.questions?.length || 6) - 1;
+    renderWizardStep();
+  });
+}
+
+const btnWizardDeploy = document.getElementById('btnWizardDeploy');
+if (btnWizardDeploy) btnWizardDeploy.addEventListener('click', deployWizardProfile);
+
+const wizardModalBackdrop = document.getElementById('wizardModalBackdrop');
+if (wizardModalBackdrop) {
+  wizardModalBackdrop.addEventListener('click', (e) => {
+    if (e.target === wizardModalBackdrop) closeWizard();
+  });
+}
+
 // Initialize
 loadData();
+

@@ -4,10 +4,12 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { execSync, spawn } = require('child_process');
+const readline = require('readline');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
 const REGISTRY_PATH = path.join(ROOT_DIR, 'registry.json');
 const SKILLS_DIR = path.join(ROOT_DIR, 'skills');
+const { PROFILES, WIZARD_QUESTIONS, resolveSkillsForProfile } = require('../lib/profiles');
 
 // Helpers for styled output
 const colors = {
@@ -234,6 +236,7 @@ function cmdInstall(args) {
   let isAll = false;
   let force = false;
   let categoryFilter = null;
+  let profileName = null;
   let skillNames = [];
 
   for (let i = 0; i < args.length; i++) {
@@ -250,6 +253,8 @@ function cmdInstall(args) {
       isAll = true;
     } else if (arg === '--category' || arg === '-c') {
       categoryFilter = args[++i];
+    } else if (arg === '--profile' || arg === '-p') {
+      profileName = args[++i]?.toLowerCase();
     } else if (!arg.startsWith('-')) {
       skillNames.push(arg);
     }
@@ -258,7 +263,22 @@ function cmdInstall(args) {
   const reg = loadRegistry();
   let toInstall = [];
 
-  if (isAll || (!categoryFilter && skillNames.length === 0)) {
+  if (profileName) {
+    const profileInfo = PROFILES[profileName];
+    if (!profileInfo) {
+      console.log(`${colors.red}Unknown role profile: "${profileName}".${colors.reset}`);
+      console.log(`Available profiles: ${Object.keys(PROFILES).join(', ')}`);
+      console.log(`Run 'skills profiles' or 'skills wizard' for guided setup.`);
+      return;
+    }
+    const resolved = resolveSkillsForProfile(reg, profileName);
+    toInstall = resolved.skills;
+    console.log(`\n${colors.bold}${profileInfo.icon} Role Profile Selected: ${profileInfo.name}${colors.reset}`);
+    console.log(`  ${colors.dim}${profileInfo.description}${colors.reset}`);
+    if (resolved.excludedCategories.length > 0) {
+      console.log(`  ${colors.yellow}Excluded Categories (skipping bloat):${colors.reset} ${resolved.excludedCategories.map(c => `${c.icon} ${c.label} (${c.count})`).join(', ')}`);
+    }
+  } else if (isAll || (!categoryFilter && skillNames.length === 0)) {
     toInstall = reg.skills;
   } else if (categoryFilter) {
     toInstall = reg.skills.filter(s => s.category.toLowerCase() === categoryFilter.toLowerCase());
@@ -490,8 +510,180 @@ function cmdUi(portArg) {
   }, 1000);
 }
 
+// Command: profiles (List available persona profiles)
+function cmdProfiles() {
+  logHeader('ROLE PROFILES & SPECIALIZED SKILL SETS');
+  console.log(`${colors.dim}Skillz categorizes skills by role so designers don't get testing suites, and QA testers don't get UI design libraries.${colors.reset}\n`);
+
+  for (const [key, p] of Object.entries(PROFILES)) {
+    console.log(`${colors.bold}${p.icon} ${p.name.toUpperCase()} (ID: ${colors.cyan}${key}${colors.reset}${colors.bold})${colors.reset}`);
+    console.log(`  ${colors.magenta}${p.tagline}${colors.reset}`);
+    console.log(`  ${colors.dim}${p.description}${colors.reset}`);
+    console.log(`  ${colors.green}Included:${colors.reset} ${p.includedCategories.join(', ')}`);
+    if (p.excludedCategories && p.excludedCategories.length > 0) {
+      console.log(`  ${colors.yellow}Excluded:${colors.reset} ${p.excludedCategories.join(', ')} (${p.whyExcluded})`);
+    }
+    console.log(`  ${colors.cyan}Install:${colors.reset}  skills install --profile ${key} --target all`);
+    console.log();
+  }
+}
+
+// Command: wizard / init / setup (Interactive 6-Question Setup Questionnaire)
+async function cmdWizard() {
+  const reg = loadRegistry();
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    terminal: false
+  });
+
+  const lineQueue = [];
+  const waiterQueue = [];
+
+  rl.on('line', (line) => {
+    if (waiterQueue.length > 0) {
+      const resolve = waiterQueue.shift();
+      resolve(line);
+    } else {
+      lineQueue.push(line);
+    }
+  });
+
+  rl.on('close', () => {
+    while (waiterQueue.length > 0) {
+      const resolve = waiterQueue.shift();
+      resolve('');
+    }
+  });
+
+  const ask = (query) => new Promise((resolve) => {
+    process.stdout.write(query);
+    if (lineQueue.length > 0) {
+      const line = lineQueue.shift();
+      process.stdout.write(line + '\n');
+      resolve(line);
+    } else {
+      waiterQueue.push(resolve);
+    }
+  });
+
+  console.log(`\n${colors.bold}${colors.cyan}======================================================================${colors.reset}`);
+  console.log(`  ${colors.bold}🧙 SKILLZ INTERACTIVE SETUP WIZARD (6 Questions)${colors.reset}`);
+  console.log(`  ${colors.dim}Profile your role, engineering workflow, and target agent environment${colors.reset}`);
+  console.log(`${colors.bold}${colors.cyan}======================================================================${colors.reset}\n`);
+
+  const answers = {};
+
+  try {
+    // Question 1: Role
+    console.log(`${colors.bold}${colors.cyan}[1/6] Primary Role & Agent Archetype${colors.reset}`);
+    console.log(`  What is your primary role or agent archetype?`);
+    WIZARD_QUESTIONS[0].options.forEach(opt => {
+      console.log(`    ${colors.green}${opt.key})${colors.reset} ${colors.bold}${opt.label}${colors.reset}`);
+      console.log(`       ${colors.dim}${opt.desc}${colors.reset}`);
+    });
+    const ans1 = (await ask(`  ${colors.bold}> Select [1-6] (Default: 5 - Full-Stack): ${colors.reset}`)).trim() || '5';
+    const selectedRoleOpt = WIZARD_QUESTIONS[0].options.find(o => o.key === ans1) || WIZARD_QUESTIONS[0].options[4];
+    answers.role = selectedRoleOpt.value;
+    console.log(`  ${colors.green}✓ Selected:${colors.reset} ${selectedRoleOpt.label}\n`);
+
+    // Question 2: Rigor
+    console.log(`${colors.bold}${colors.cyan}[2/6] Engineering Rigor & Verification Strictness${colors.reset}`);
+    console.log(`  How strict should the testing, planning, and verification gates be?`);
+    WIZARD_QUESTIONS[1].options.forEach(opt => {
+      console.log(`    ${colors.green}${opt.key})${colors.reset} ${colors.bold}${opt.label}${colors.reset}`);
+      console.log(`       ${colors.dim}${opt.desc}${colors.reset}`);
+    });
+    const ans2 = (await ask(`  ${colors.bold}> Select [1-3] (Default: 2 - Pragmatic & Agile): ${colors.reset}`)).trim() || '2';
+    const selectedRigorOpt = WIZARD_QUESTIONS[1].options.find(o => o.key === ans2) || WIZARD_QUESTIONS[1].options[1];
+    answers.rigor = selectedRigorOpt.value;
+    console.log(`  ${colors.green}✓ Selected:${colors.reset} ${selectedRigorOpt.label}\n`);
+
+    // Question 3: Compression
+    console.log(`${colors.bold}${colors.cyan}[3/6] Token Optimization & Communication Mode${colors.reset}`);
+    console.log(`  How should your AI agent communicate and optimize token usage?`);
+    WIZARD_QUESTIONS[2].options.forEach(opt => {
+      console.log(`    ${colors.green}${opt.key})${colors.reset} ${colors.bold}${opt.label}${colors.reset}`);
+      console.log(`       ${colors.dim}${opt.desc}${colors.reset}`);
+    });
+    const ans3 = (await ask(`  ${colors.bold}> Select [1-2] (Default: 1 - Caveman Token Compression): ${colors.reset}`)).trim() || '1';
+    const selectedCompOpt = WIZARD_QUESTIONS[2].options.find(o => o.key === ans3) || WIZARD_QUESTIONS[2].options[0];
+    answers.compression = selectedCompOpt.value;
+    console.log(`  ${colors.green}✓ Selected:${colors.reset} ${selectedCompOpt.label}\n`);
+
+    // Question 4: Optional Feature Packs
+    console.log(`${colors.bold}${colors.cyan}[4/6] Optional Feature Packs${colors.reset}`);
+    console.log(`  Select any additional feature packs to include:`);
+    WIZARD_QUESTIONS[3].options.forEach(opt => {
+      console.log(`    ${colors.green}${opt.key})${colors.reset} ${colors.bold}${opt.label}${colors.reset}`);
+      console.log(`       ${colors.dim}${opt.desc}${colors.reset}`);
+    });
+    const ans4 = (await ask(`  ${colors.bold}> Select comma-separated numbers [1-5] (Default: 5 - None): ${colors.reset}`)).trim() || '5';
+    const packKeys = ans4.split(',').map(s => s.trim());
+    answers.featurePacks = [];
+    packKeys.forEach(k => {
+      const match = WIZARD_QUESTIONS[3].options.find(o => o.key === k);
+      if (match && match.value !== 'none') answers.featurePacks.push(match.value);
+    });
+    console.log(`  ${colors.green}✓ Feature Packs:${colors.reset} ${answers.featurePacks.length > 0 ? answers.featurePacks.join(', ') : 'Pure Role Focus'}\n`);
+
+    // Question 5: Target Agents
+    console.log(`${colors.bold}${colors.cyan}[5/6] Target AI Coding Agent(s)${colors.reset}`);
+    console.log(`  Which AI coding agent(s) do you want to install and sync skills into?`);
+    WIZARD_QUESTIONS[4].options.forEach(opt => {
+      console.log(`    ${colors.green}${opt.key})${colors.reset} ${colors.bold}${opt.label}${colors.reset} ${colors.dim}${opt.desc}${colors.reset}`);
+    });
+    const ans5 = (await ask(`  ${colors.bold}> Select [1-6] (Default: 1 - All Detected Agents): ${colors.reset}`)).trim() || '1';
+    const selectedTargetOpt = WIZARD_QUESTIONS[4].options.find(o => o.key === ans5) || WIZARD_QUESTIONS[4].options[0];
+    answers.target = selectedTargetOpt.value;
+    console.log(`  ${colors.green}✓ Selected Target:${colors.reset} ${selectedTargetOpt.label}\n`);
+
+    // Question 6: Sync Strategy
+    console.log(`${colors.bold}${colors.cyan}[6/6] Filesystem Link Strategy${colors.reset}`);
+    console.log(`  How should skills be installed and synchronized?`);
+    WIZARD_QUESTIONS[5].options.forEach(opt => {
+      console.log(`    ${colors.green}${opt.key})${colors.reset} ${colors.bold}${opt.label}${colors.reset}`);
+      console.log(`       ${colors.dim}${opt.desc}${colors.reset}`);
+    });
+    const ans6 = (await ask(`  ${colors.bold}> Select [1-2] (Default: 1 - Zero-Drift Symlink / Junction): ${colors.reset}`)).trim() || '1';
+    const selectedModeOpt = WIZARD_QUESTIONS[5].options.find(o => o.key === ans6) || WIZARD_QUESTIONS[5].options[0];
+    answers.mode = selectedModeOpt.value;
+    console.log(`  ${colors.green}✓ Selected Mode:${colors.reset} ${selectedModeOpt.label}\n`);
+
+    // Resolve skills
+    const resolved = resolveSkillsForProfile(reg, answers.role, answers);
+
+    console.log(`${colors.cyan}----------------------------------------------------------------------${colors.reset}`);
+    console.log(`  ${colors.bold}📋 SETUP WIZARD SUMMARY:${colors.reset}`);
+    console.log(`    • Role Archetype:     ${colors.bold}${resolved.profile.icon} ${resolved.profile.name}${colors.reset}`);
+    console.log(`    • Selected Skills:    ${colors.green}${colors.bold}${resolved.count} tailored skills${colors.reset}`);
+    if (resolved.excludedCategories.length > 0) {
+      console.log(`    • Excluded Bloat:     ${colors.yellow}${resolved.excludedCategories.map(c => `${c.label} (${c.count})`).join(', ')}${colors.reset}`);
+      console.log(`    • Exclusion Reason:   ${colors.dim}${resolved.profile.whyExcluded}${colors.reset}`);
+    }
+    console.log(`    • Workflow Rigor:     ${selectedRigorOpt.label}`);
+    console.log(`    • Token Optimization: ${selectedCompOpt.label}`);
+    console.log(`    • Target Agent(s):    ${selectedTargetOpt.label}`);
+    console.log(`    • Link Strategy:      ${selectedModeOpt.label}`);
+    console.log(`${colors.cyan}----------------------------------------------------------------------${colors.reset}\n`);
+
+    const confirm = (await ask(`  ${colors.bold}Deploy and install these ${resolved.count} skills now? (Y/n): ${colors.reset}`)).trim().toLowerCase();
+    rl.close();
+
+    if (confirm === '' || confirm === 'y' || confirm === 'yes') {
+      const installArgs = ['--target', answers.target, '--mode', answers.mode, '--force', '--profile', answers.role];
+      cmdInstall(installArgs);
+    } else {
+      console.log(`\n${colors.yellow}Setup cancelled. You can rerun anytime with 'skills wizard' or install directly with 'skills install --profile <role>'.${colors.reset}\n`);
+    }
+  } catch (err) {
+    rl.close();
+    console.log(`${colors.red}Wizard error: ${err.message}${colors.reset}`);
+  }
+}
+
 // CLI entrypoint router
-function main() {
+async function main() {
   const args = process.argv.slice(2);
   const cmd = args[0] || 'help';
 
@@ -500,6 +692,15 @@ function main() {
   }
 
   switch (cmd) {
+    case 'wizard':
+    case 'init':
+    case 'setup':
+    case 'role':
+      await cmdWizard();
+      break;
+    case 'profiles':
+      cmdProfiles();
+      break;
     case 'list':
     case 'ls':
       cmdList(args[1]);
@@ -561,6 +762,8 @@ ${colors.bold}USAGE:${colors.reset}
   skillz <command> [options]
 
 ${colors.bold}COMMANDS:${colors.reset}
+  ${colors.green}wizard / init / setup${colors.reset}     Interactive 6-question questionnaire to configure role & install
+  ${colors.green}profiles${colors.reset}                   List all persona profiles (Designer, QA, Backend, Fullstack, etc.)
   ${colors.green}install [name] [options]${colors.reset}   Install skill(s) into AI coding agent(s) (default: all agents)
   ${colors.green}update / upgrade${colors.reset}           Pull registry updates and force-sync all latest skills
   ${colors.green}status${colors.reset}                     Show detected agent installations and linked skills
@@ -574,6 +777,8 @@ ${colors.bold}COMMANDS:${colors.reset}
   ${colors.green}ui [port]${colors.reset}                 Launch local visual dashboard on browser (default: 3888)
 
 ${colors.bold}INSTALL OPTIONS:${colors.reset}
+  --profile, -p <role>     Install by persona profile: designer, qa, backend,
+                           agent-harness, fullstack, all
   --target, -t <agent>     Target agent: all, claude, cursor, antigravity, codex,
                            windsurf, openhands, cline, roo, etc. (default: all)
   --all, -a                Install all 162 skills
@@ -581,13 +786,21 @@ ${colors.bold}INSTALL OPTIONS:${colors.reset}
   --force, -f, --latest    Force re-link and update even if already up to date
   --copy                   Copy files instead of directory junction/symlink
 
-${colors.bold}EXAMPLES (FOR USERS & AGENTS):${colors.reset}
+${colors.bold}ROLE PROFILES (SPECIALIZED CATEGORIZATION):${colors.reset}
+  ${colors.cyan}designer${colors.reset}      🎨 43 UI design systems, animations & styling (skips QA & testing)
+  ${colors.cyan}qa${colors.reset}            🛡️ Python testing, pytest, TDD, verification gates (skips 43 UI designs)
+  ${colors.cyan}backend${colors.reset}       ☁️ GCP cloud, Docker, APIs, reliability, architecture (skips UI designs)
+  ${colors.cyan}agent-harness${colors.reset} 🧠 ECC harness, Harness² OS, superpowers, caveman (skips UI designs)
+  ${colors.cyan}fullstack${colors.reset}     🚀 12 curated designs + superpowers TDD + backend + testing + cloud
+  ${colors.cyan}all${colors.reset}           ⚡ Universal 162-skill suite across all 11 categories
+
+${colors.bold}EXAMPLES:${colors.reset}
+  skills wizard                          # Run interactive 6-question role wizard
+  skills profiles                        # View all role profiles and excluded categories
+  skills install --profile designer      # Install UI/UX design suite (no testing bloat)
+  skills install --profile qa            # Install QA & testing suite (no UI design bloat)
+  skills install --profile fullstack     # Install curated full-stack founder toolkit
   skills install --all --target all      # Universal 1-command install to all agents
-  skills update                          # Rebuild registry & update all links to latest
-  skills install --category design       # Install all design skills
-  skills install ecc -t claude           # Install ECC harness to Claude Code
-  skills search "animation"              # Search for animation & motion skills
-  skills status                          # Inspect agent installation status
       `);
       break;
     default:
@@ -596,3 +809,4 @@ ${colors.bold}EXAMPLES (FOR USERS & AGENTS):${colors.reset}
 }
 
 main();
+

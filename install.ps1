@@ -19,6 +19,7 @@ param (
     [string]$Target = "all",
     [switch]$All = $true,
     [string]$Category = "",
+    [string]$Profile = "",
     [switch]$Force,
     [switch]$Copy,
     [switch]$GlobalCLI = $true
@@ -105,7 +106,9 @@ $installArgs = @("install", "--target", $Target)
 if ($Copy) { $installArgs += "--copy" }
 if ($Force) { $installArgs += "--force" }
 
-if ($Category -ne "") {
+if ($Profile -ne "") {
+    $installArgs += @("--profile", $Profile)
+} elseif ($Category -ne "") {
     $installArgs += @("--category", $Category)
 } else {
     $installArgs += "--all"
