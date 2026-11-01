@@ -1,0 +1,83 @@
+name: Security & Malware Guard
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    # Run daily security scan at 02:00 UTC
+    - cron: '0 2 * * *'
+
+permissions:
+  contents: read
+  security-events: write
+  pull-requests: read
+
+jobs:
+  malware-and-integrity-check:
+    name: Anti-Malware & Integrity Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Audit package.json scripts against tampering
+        run: |
+          echo "Scanning package.json for unauthorized scripts or injected binaries..."
+          # Check start script doesn't contain chained commands or rogue scripts
+          START_SCRIPT=$(node -p "try { require('./package.json').scripts.start } catch(e) { '' }")
+          echo "Found start script: $START_SCRIPT"
+          if echo "$START_SCRIPT" | grep -Ei "(api\.js|curl|wget|bash|powershell -enc|http:\/\/|https:\/\/)"; then
+            echo "::error::Malicious or unauthorized command detected in package.json start script!"
+            exit 1
+          fi
+          echo "package.json scripts verified clean."
+
+      - name: Scan repository for known malware signatures
+        run: |
+          echo "Scanning for malware patterns (crypto drainers, RPC hooks, C2 endpoints)..."
+          # Search for known patterns
+          if grep -rnEi "(withRpcEndpoints|0x\/cls|ethereum\.request.*window\.location)" --exclude-dir={node_modules,.git} .; then
+            echo "::error::Detected known malicious signature in codebase!"
+            exit 1
+          fi
+          echo "No malicious signatures detected."
+
+      - name: Validate all 162 skills
+        run: |
+          node bin/skills.js validate
+
+  dependency-review:
+    name: Dependency Review & Supply Chain Guard
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Dependency Review Action
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: moderate
+          deny-licenses: GPL-1.0-only, GPL-1.0-or-later
+
+  codeql-analysis:
+    name: CodeQL Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
