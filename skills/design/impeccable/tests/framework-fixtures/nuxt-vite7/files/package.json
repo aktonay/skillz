@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "nuxt dev --host 127.0.0.1",
-    "build": "nuxt build",
+    "dev": "node init && nuxt dev --host 127.0.0.1",
+    "build": "node init && nuxt build",
     "preview": "nuxt preview"
   },
   "devDependencies": {
