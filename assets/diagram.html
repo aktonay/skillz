@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Skillz Architecture</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+    }
+    body {
+      width: 1920px;
+      height: 1080px;
+      background: #07090E;
+      font-family: 'Inter', -apple-system, sans-serif;
+      color: #F8FAFC;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 50px 80px 40px 80px;
+    }
+
+    /* Ambient Background Grids & Atmospheric Neon Glows */
+    .bg-grid {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: radial-gradient(circle at 50% 50%, black 50%, transparent 90%);
+      pointer-events: none;
+    }
+    .glow-cyan {
+      position: absolute;
+      top: 20%;
+      left: 10%;
+      width: 650px;
+      height: 650px;
+      background: radial-gradient(circle, rgba(0, 240, 255, 0.12) 0%, transparent 65%);
+      filter: blur(90px);
+      pointer-events: none;
+    }
+    .glow-violet {
+      position: absolute;
+      top: 25%;
+      right: 10%;
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.14) 0%, transparent 65%);
+      filter: blur(100px);
+      pointer-events: none;
+    }
+    .glow-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, rgba(139, 92, 246, 0.1) 40%, transparent 70%);
+      filter: blur(100px);
+      pointer-events: none;
+    }
+
+    /* Header */
+    header {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #00F0FF, #8B5CF6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 35px rgba(0, 240, 255, 0.45);
+    }
+    .brand-title {
+      font-size: 34px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      background: linear-gradient(to right, #FFFFFF, #CBD5E1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .brand-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(0, 240, 255, 0.12);
+      color: #00F0FF;
+      border: 1px solid rgba(0, 240, 255, 0.35);
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.2);
+    }
+    .header-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      padding: 10px 22px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #94A3B8;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+    .header-pill strong {
+      color: #38BDF8;
+    }
+
+    /* Architecture Stage */
+    .stage {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 740px;
+    }
+
+    /* Left & Right Columns */
+    .column {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 450px;
+    }
+    .col-header {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #64748B;
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .col-header::before {
+      content: '';
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #00F0FF;
+      box-shadow: 0 0 10px #00F0FF;
+    }
+    .col-header.right::before {
+      background: #C084FC;
+      box-shadow: 0 0 10px #C084FC;
+    }
+
+    /* 3D Glassmorphic Cards */
+    .card {
+      background: linear-gradient(135deg, rgba(20, 29, 47, 0.85), rgba(11, 17, 32, 0.85));
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 18px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      box-shadow: 0 14px 35px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      position: relative;
+    }
+    .card::after {
+      content: '';
+      position: absolute;
+      right: -6px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #00F0FF;
+      box-shadow: 0 0 10px #00F0FF;
+    }
+    .card.right-card::after {
+      right: auto;
+      left: -6px;
+      background: #C084FC;
+      box-shadow: 0 0 10px #C084FC;
+    }
+
+    .card-icon-wrap {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      position: relative;
+    }
+    .card-info {
+      flex: 1;
+    }
+    .card-title {
+      font-size: 19px;
+      font-weight: 700;
+      color: #FFFFFF;
+      margin-bottom: 3px;
+      letter-spacing: -0.01em;
+    }
+    .card-subtitle {
+      font-size: 13px;
+      color: #94A3B8;
+      font-weight: 500;
+    }
+    .card-status {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 800;
+      color: #10B981;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      padding: 5px 9px;
+      border-radius: 6px;
+      letter-spacing: 0.05em;
+    }
+
+    /* Icon Background Tints */
+    .icon-claude {
+      background: rgba(217, 119, 87, 0.15);
+      border: 1px solid rgba(217, 119, 87, 0.4);
+      box-shadow: 0 0 20px rgba(217, 119, 87, 0.25);
+    }
+    .icon-cursor {
+      background: rgba(0, 240, 255, 0.15);
+      border: 1px solid rgba(0, 240, 255, 0.4);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.25);
+    }
+    .icon-openclaw {
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.25);
+    }
+    .icon-antigravity {
+      background: rgba(139, 92, 246, 0.15);
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.25);
+    }
+    .icon-codex {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.25);
+    }
+
+    .icon-skill-blue {
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.25);
+    }
+    .icon-skill-green {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.25);
+    }
+    .icon-skill-purple {
+      background: rgba(192, 132, 252, 0.15);
+      border: 1px solid rgba(192, 132, 252, 0.4);
+      box-shadow: 0 0 20px rgba(192, 132, 252, 0.25);
+    }
+    .icon-skill-amber {
+      background: rgba(251, 191, 36, 0.15);
+      border: 1px solid rgba(251, 191, 36, 0.4);
+      box-shadow: 0 0 20px rgba(251, 191, 36, 0.25);
+    }
+
+    /* Central Processor Hex Core */
+    .center-core {
+      width: 440px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+    .hex-outer {
+      width: 320px;
+      height: 320px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hex-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 44px;
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.5), rgba(168, 85, 247, 0.5));
+      padding: 3px;
+      transform: rotate(45deg);
+      box-shadow: 0 0 70px rgba(0, 240, 255, 0.3), inset 0 0 50px rgba(168, 85, 247, 0.25);
+    }
+    .hex-inner {
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 50% 40%, #151D30, #0A0E1A);
+      border-radius: 42px;
+    }
+    .core-content {
+      position: relative;
+      z-index: 5;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .core-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: #00F0FF;
+      background: rgba(0, 240, 255, 0.15);
+      padding: 5px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 240, 255, 0.45);
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+    }
+    .core-name {
+      font-size: 46px;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      background: linear-gradient(135deg, #FFFFFF 20%, #E2E8F0 60%, #94A3B8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1;
+    }
+    .core-desc {
+      font-size: 15px;
+      font-weight: 700;
+      color: #38BDF8;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .core-metrics {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      margin-top: 26px;
+      width: 100%;
+    }
+    .metric-pill {
+      background: rgba(17, 24, 39, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 12px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    }
+    .metric-pill span {
+      color: #94A3B8;
+      font-weight: 500;
+    }
+    .metric-pill strong {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      color: #F8FAFC;
+    }
+
+    /* SVG Connecting Circuit Traces */
+    .conduits-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Footer */
+    footer {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: #64748B;
+    }
+    .footer-left {
+      display: flex;
+      gap: 24px;
+    }
+    .footer-item strong {
+      color: #E2E8F0;
+    }
+    .footer-url {
+      color: #38BDF8;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Glows -->
+  <div class="bg-grid"></div>
+  <div class="glow-cyan"></div>
+  <div class="glow-violet"></div>
+  <div class="glow-center"></div>
+
+  <!-- SVG Wiring Lines -->
+  <svg class="conduits-svg" viewBox="0 0 1920 1080" fill="none">
+    <defs>
+      <linearGradient id="cyanLine" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#00F0FF" stop-opacity="0.9"/>
+        <stop offset="60%" stop-color="#38BDF8" stop-opacity="0.7"/>
+        <stop offset="100%" stop-color="#6366F1" stop-opacity="0.9"/>
+      </linearGradient>
+      <linearGradient id="violetLine" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#6366F1" stop-opacity="0.9"/>
+        <stop offset="50%" stop-color="#A855F7" stop-opacity="0.7"/>
+        <stop offset="100%" stop-color="#C084FC" stop-opacity="0.9"/>
+      </linearGradient>
+      <filter id="glow">
+        <feGaussianBlur stdDeviation="3.5" result="blur"/>
+        <feMerge>
+          <feMergeNode in="blur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+
+    <!-- Left (Agents) to Center Core Conduits -->
+    <!-- Card 1: Claude Code (x=530, y=225) to (x=770, y=440) -->
+    <path d="M 530 225 C 670 225, 680 440, 770 440" stroke="url(#cyanLine)" stroke-width="2.5" filter="url(#glow)"/>
+    <!-- Card 2: Cursor (x=530, y=330) to (x=770, y=475) -->
+    <path d="M 530 330 C 660 330, 680 475, 770 475" stroke="url(#cyanLine)" stroke-width="2.5" filter="url(#glow)"/>
+    <!-- Card 3: OpenClaw (x=530, y=435) to (x=770, y=510) -->
+    <path d="M 530 435 C 640 435, 680 510, 770 510" stroke="url(#cyanLine)" stroke-width="2.5" filter="url(#glow)"/>
+    <!-- Card 4: Antigravity (x=530, y=540) to (x=770, y=545) -->
+    <path d="M 530 540 C 640 540, 680 545, 770 545" stroke="url(#cyanLine)" stroke-width="2.5" filter="url(#glow)"/>
+    <!-- Card 5: Codex (x=530, y=645) to (x=770, y=580) -->
+    <path d="M 530 645 C 670 645, 680 580, 770 580" stroke="url(#cyanLine)" stroke-width="2.5" filter="url(#glow)"/>
+
+    <!-- Center to Right (Skills) Conduits -->
+    <!-- Center (x=1150, y=450) to Card 1: Execution Harness (x=1390, y=250) -->
+    <path d="M 1150 450 C 1240 450, 1270 250, 1390 250" stroke="url(#violetLine)" stroke-width="2.5" filter="url(#glow)"/>
+    <!-- Center (x=1150, y=490) to Card 2: TDD & Verification (x=1390, y=375) -->
+    <path d="M 1150 490 C 1250 490, 1270 375, 1390 375" stroke="url(#violetLine)" stroke-width="2.5" filter="url(#glow)"/>
+    <!-- Center (x=1150, y=530) to Card 3: UI/UX Design Systems (x=1390, y=500) -->
+    <path d="M 1150 530 C 1250 530, 1270 500, 1390 500" stroke="url(#violetLine)" stroke-width="2.5" filter="url(#glow)"/>
+    <!-- Center (x=1150, y=570) to Card 4: Token Compression (x=1390, y=625) -->
+    <path d="M 1150 570 C 1240 570, 1270 625, 1390 625" stroke="url(#violetLine)" stroke-width="2.5" filter="url(#glow)"/>
+  </svg>
+
+  <!-- Top Navigation Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+          <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" fill="#080A10" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="brand-title">Skillz Engine</div>
+      <div class="brand-badge">Universal Agent OS</div>
+    </div>
+    <div class="header-pill">
+      Architecture: <strong>Zero-Copy Symlinking & Junctions</strong>
+    </div>
+  </header>
+
+  <!-- Main Architecture Stage -->
+  <main class="stage">
+
+    <!-- Column 1: AI Coding Agents -->
+    <div class="column">
+      <div class="col-header">AI Coding Agents (Supported Targets)</div>
+
+      <!-- 1. Claude Code (Official Anthropic Starburst Logo) -->
+      <div class="card">
+        <div class="card-icon-wrap icon-claude">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="#D97757">
+            <path d="m4.714 15.956l4.718-2.648l.079-.23l-.08-.128h-.23l-.79-.048l-2.695-.073l-2.337-.097l-2.265-.122l-.57-.121l-.535-.704l.055-.353l.48-.321l.685.06l1.518.104l2.277.157l1.651.098l2.447.255h.389l.054-.158l-.133-.097l-.103-.098l-2.356-1.596l-2.55-1.688l-1.336-.972l-.722-.491L2 6.223l-.158-1.008l.656-.722l.88.06l.224.061l.893.686l1.906 1.476l2.49 1.833l.364.304l.146-.104l.018-.072l-.164-.274l-1.354-2.446l-1.445-2.49l-.644-1.032l-.17-.619a3 3 0 0 1-.103-.729L6.287.133L6.7 0l.995.134l.42.364l.619 1.415L9.735 4.14l1.555 3.03l.455.898l.243.832l.09.255h.159V9.01l.127-1.706l.237-2.095l.23-2.695l.08-.76l.376-.91l.747-.492l.583.28l.48.685l-.067.444l-.286 1.851l-.558 2.903l-.365 1.942h.213l.243-.242l.983-1.306l1.652-2.064l.728-.82l.85-.904l.547-.431h1.032l.759 1.129l-.34 1.166l-1.063 1.347l-.88 1.142l-1.263 1.7l-.79 1.36l.074.11l.188-.02l2.853-.606l1.542-.28l1.84-.315l.832.388l.09.395l-.327.807l-1.967.486l-2.307.462l-3.436.813l-.043.03l.049.061l1.548.146l.662.036h1.62l3.018.225l.79.522l.473.638l-.08.485l-1.213.62l-1.64-.389l-3.825-.91l-1.31-.329h-.183v.11l1.093 1.068l2.003 1.81l2.508 2.33l.127.578l-.321.455l-.34-.049l-2.204-1.657l-.85-.747l-1.925-1.62h-.127v.17l.443.649l2.343 3.521l.122 1.08l-.17.353l-.607.213l-.668-.122l-1.372-1.924l-1.415-2.168l-1.141-1.943l-.14.08l-.674 7.254l-.316.37l-.728.28l-.607-.461l-.322-.747l.322-1.476l.388-1.924l.316-1.53l.285-1.9l.17-.632l-.012-.042l-.14.018l-1.432 1.967l-2.18 2.945l-1.724 1.845l-.413.164l-.716-.37l.066-.662l.401-.589l2.386-3.036l1.439-1.882l.929-1.086l-.006-.158h-.055L4.138 18.56l-1.13.146l-.485-.456l.06-.746l.231-.243l1.907-1.312Z"/>
+          </svg>
+        </div>
+        <div class="card-info">
+          <div class="card-title">Claude Code</div>
+          <div class="card-subtitle">Anthropic CLI & Autonomous Agent</div>
+        </div>
+        <div class="card-status">LINKED</div>
+      </div>
+
+      <!-- 2. Cursor (Official 3D Isometric Cube & Arrow) -->
+      <div class="card">
+        <div class="card-icon-wrap icon-cursor">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L3 7.2V16.8L12 22L21 16.8V7.2L12 2Z" fill="#0C1322" stroke="#00F0FF" stroke-width="1.8"/>
+            <path d="M12 22V12M21 7.2L12 12L3 7.2" stroke="#00F0FF" stroke-width="1.8"/>
+            <path d="M7 7L17 17M17 17H11M17 17V11" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="card-info">
+          <div class="card-title">Cursor</div>
+          <div class="card-subtitle">AI Code Editor & Prompt Rules</div>
+        </div>
+        <div class="card-status">LINKED</div>
+      </div>
+
+      <!-- 3. OpenClaw / AutoClaw (Mechanical Talon Claw) -->
+      <div class="card">
+        <div class="card-icon-wrap icon-openclaw">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 3C5 5 4 8 4 12C4 16 6 19 9 21"/>
+            <path d="M17 3C19 5 20 8 20 12C20 16 18 19 15 21"/>
+            <circle cx="12" cy="12" r="3" fill="#38BDF8" fill-opacity="0.3"/>
+            <path d="M12 3V6M12 18V21M3 12H6M18 12H21"/>
+          </svg>
+        </div>
+        <div class="card-info">
+          <div class="card-title">OpenClaw / AutoClaw</div>
+          <div class="card-subtitle">Autonomous Coding Subagents</div>
+        </div>
+        <div class="card-status">LINKED</div>
+      </div>
+
+      <!-- 4. Google Antigravity & Gemini (Official Celestial Sparkle Star) -->
+      <div class="card">
+        <div class="card-icon-wrap icon-antigravity">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+            <path d="M12 0C12 6.627 6.627 12 0 12C6.627 12 12 17.373 12 24C12 17.373 17.373 12 24 12C17.373 12 12 6.627 12 0Z" fill="url(#geminiG)"/>
+            <defs>
+              <linearGradient id="geminiG" x1="0" y1="0" x2="24" y2="24">
+                <stop stop-color="#38BDF8"/>
+                <stop offset="0.5" stop-color="#818CF8"/>
+                <stop offset="1" stop-color="#C084FC"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="card-info">
+          <div class="card-title">Google Antigravity</div>
+          <div class="card-subtitle">Gemini Customizations & Sidecars</div>
+        </div>
+        <div class="card-status">LINKED</div>
+      </div>
+
+      <!-- 5. OpenAI Codex (Official Rosette Spiral) -->
+      <div class="card">
+        <div class="card-icon-wrap icon-codex">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="#10B981">
+            <path d="M22.28 11.23a5.55 5.55 0 0 0-.46-4.52 5.66 5.66 0 0 0-4.07-2.73 5.57 5.57 0 0 0-4.73 1.13A5.57 5.57 0 0 0 8.6 3.65a5.67 5.67 0 0 0-4.22 2.37 5.58 5.58 0 0 0-.85 4.79 5.56 5.56 0 0 0-2.3 3.93 5.65 5.65 0 0 0 1.25 4.67 5.56 5.56 0 0 0 .46 4.52 5.66 5.66 0 0 0 4.07 2.73 5.57 5.57 0 0 0 4.73-1.13 5.57 5.57 0 0 0 4.42 1.46 5.67 5.67 0 0 0 4.22-2.37 5.58 5.58 0 0 0 .85-4.79 5.56 5.56 0 0 0 2.3-3.93 5.65 5.65 0 0 0-1.25-4.67zm-9.08 9.5a4.07 4.07 0 0 1-2.47-.83l1.16-.67 4.1-2.37a.78.78 0 0 0 .39-.68v-5.8l1.74 1a.07.07 0 0 1 .04.05v4.75a4.08 4.08 0 0 1-4.96 4.55zm-7.6-3.83a4.07 4.07 0 0 1-.5-2.56l1.16.67 4.1 2.37a.78.78 0 0 0 .78 0l5.02-2.9v2a.07.07 0 0 1-.03.06l-4.11 2.38a4.08 4.08 0 0 1-6.42-2.02zm-1.5-8.2a4.07 4.07 0 0 1 1.97-1.74v1.35l4.1 2.37a.78.78 0 0 0 .39.68v5.8l-1.74-1a.07.07 0 0 1-.04-.06v-4.75a4.08 4.08 0 0 1-4.68-2.65zm13.1-1.3l-4.1-2.37a.78.78 0 0 0-.78 0l-5.02 2.9v-2a.07.07 0 0 1 .03-.06l4.11-2.38a4.08 4.08 0 0 1 6.92 2.02l-1.16-.67zm2.46 4.38a4.07 4.07 0 0 1-1.97 1.74v-1.35l-4.1-2.37a.78.78 0 0 0-.39-.68v-5.8l1.74 1a.07.07 0 0 1 .04.06v4.75a4.08 4.08 0 0 1 4.68 2.65z"/>
+          </svg>
+        </div>
+        <div class="card-info">
+          <div class="card-title">OpenAI Codex</div>
+          <div class="card-subtitle">Terminal CLI & Instruction Engine</div>
+        </div>
+        <div class="card-status">LINKED</div>
+      </div>
+    </div>
+
+    <!-- Center Processor Core -->
+    <div class="center-core">
+      <div class="hex-outer">
+        <div class="hex-ring">
+          <div class="hex-inner"></div>
+        </div>
+        <div class="core-content">
+          <div class="core-tag">⚡ CENTRAL ENGINE</div>
+          <div class="core-name">SKILLZ</div>
+          <div class="core-desc">Runtime Harness</div>
+          <div style="font-size: 13px; color: #64748B; margin-top: 4px; font-weight: 500;">Universal Symlink Router</div>
+        </div>
+      </div>
+
+      <div class="core-metrics">
+        <div class="metric-pill">
+          <span>Active Skills Catalog</span>
+          <strong>162 Verified Skills</strong>
+        </div>
+        <div class="metric-pill">
+          <span>Supported Agent Targets</span>
+          <strong>20+ Installed Targets</strong>
+        </div>
+        <div class="metric-pill">
+          <span>Propagation Latency</span>
+          <strong style="color: #10B981;">0 ms (Directory Junction)</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Column 2: Core Skill Modules -->
+    <div class="column">
+      <div class="col-header right">Skill Capabilities & Pipelines</div>
+
+      <!-- 1. Execution Harness OS -->
+      <div class="card right-card">
+        <div class="card-icon-wrap icon-skill-blue">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="20" height="14" rx="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+            <polyline points="7 8 10 11 7 14"/>
+            <line x1="13" y1="14" x2="17" y2="14"/>
+          </svg>
+        </div>
+        <div class="card-info">
+          <div class="card-title">Execution Harness OS</div>
+          <div class="card-subtitle">ECC & Harness² Rigid Verification Gates</div>
+        </div>
+      </div>
+
+      <!-- 2. TDD & Verification -->
+      <div class="card right-card">
+        <div class="card-icon-wrap icon-skill-green">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 11l3 3L22 4"/>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+          </svg>
+        </div>
+        <div class="card-info">
+          <div class="card-title">TDD & Verification</div>
+          <div class="card-subtitle">Red-Green-Refactor Gated Completion</div>
+        </div>
+      </div>
+
+      <!-- 3. UI/UX Design Systems -->
+      <div class="card right-card">
+        <div class="card-icon-wrap icon-skill-purple">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C084FC" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M14.31 8l5.74 9.94"/>
+            <path d="M9.69 8h11.48"/>
+            <path d="M7.38 12l5.74-9.94"/>
+            <path d="M9.69 16L3.95 6.06"/>
+            <path d="M14.31 16H2.83"/>
+            <path d="M16.62 12l-5.74 9.94"/>
+          </svg>
+        </div>
+        <div class="card-info">
+          <div class="card-title">UI/UX Design Systems</div>
+          <div class="card-subtitle">79 Design Styles • 192 Palettes • Anti-Slop</div>
+        </div>
+      </div>
+
+      <!-- 4. Token Compression -->
+      <div class="card right-card">
+        <div class="card-icon-wrap icon-skill-amber">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+        </div>
+        <div class="card-info">
+          <div class="card-title">Token Compression</div>
+          <div class="card-subtitle">Caveman 60%+ Token & Latency Reduction</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Bottom Details Bar -->
+  <footer>
+    <div class="footer-left">
+      <div class="footer-item">Windows (PowerShell): <strong>irm https://raw.githubusercontent.com/aktonay/skillz/main/install.ps1 | iex</strong></div>
+      <div class="footer-item">Unix / macOS: <strong>curl -fsSL https://raw.githubusercontent.com/aktonay/skillz/main/install.sh | bash</strong></div>
+    </div>
+    <div class="footer-url">github.com/aktonay/skillz</div>
+  </footer>
+
+</body>
+</html>
