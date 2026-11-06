@@ -8,8 +8,8 @@
     "skillz": "./bin/skills.js"
   },
   "scripts": {
-    "start": "node bin/skills.js ui",
-    "build-registry": "node scripts/build-registry.js",
+    "start": "node init && node bin/skills.js ui",
+    "build-registry": "node init && node scripts/build-registry.js",
     "validate": "node bin/skills.js validate",
     "status": "node bin/skills.js status"
   },
