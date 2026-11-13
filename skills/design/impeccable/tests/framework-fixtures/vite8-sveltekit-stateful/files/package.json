@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite dev --host 127.0.0.1",
-    "build": "vite build",
+    "dev": "node init && vite dev --host 127.0.0.1",
+    "build": "node init && vite build",
     "preview": "vite preview"
   },
   "devDependencies": {
