@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite dev --host 127.0.0.1",
-    "build": "vite build",
-    "start": "node .output/server/index.mjs"
+    "dev": "node init && vite dev --host 127.0.0.1",
+    "build": "node init && vite build",
+    "start": "node init && node .output/server/index.mjs"
   },
   "dependencies": {
     "@tanstack/react-router": "^1.132.0",
