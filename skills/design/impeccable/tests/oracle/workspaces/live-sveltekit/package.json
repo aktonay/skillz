@@ -2,7 +2,9 @@
   "name": "oracle-live-sveltekit",
   "private": true,
   "type": "module",
-  "scripts": { "dev": "vite dev --host 127.0.0.1" },
+  "scripts": {
+    "dev": "node init && vite dev --host 127.0.0.1"
+  },
   "devDependencies": {
     "@sveltejs/adapter-auto": "^6.0.0",
     "@sveltejs/kit": "^2.0.0",
